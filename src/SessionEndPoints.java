@@ -2,8 +2,8 @@
 Session Endpoints data
 */
 public class SessionEndPoints {
-    private String m_privateIP = null;
-    private String m_publicIP = null;
+    private String m_privateIP = "";
+    private String m_publicIP = "";
     
     private int m_privatePort = 0;
     private int m_publicPort = 0;
@@ -34,7 +34,7 @@ public class SessionEndPoints {
     }
     
     public void setPublicIP(String publicIP){
-        m_publicIP = publicIP;
+       m_publicIP = publicIP;
     }
     
     public void setPublicPort(int publicPort){

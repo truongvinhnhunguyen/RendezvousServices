@@ -1,42 +1,9 @@
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.HashMap;
 
-/*
-COMMAND 1: <R><ID><IP:PORT>
-Register service machine (9 bytes)
-+ <R>:  1 byte with character 'R"
-+ <ID>: 2 bytes interger represent service machine's ID
-+ <IP:PORT>: 4 bytes private IP;2 bytes private port of service machine
-REPLY: NO REPLY
-
-Example: R 0x0001 0xC0 0xA8 0x00 0x01 0x022B means
-Register service machine ID 1 with private IP:HOST 192.168.0.1:555
-
-COMMAND 2: <S><ID><IP:PORT>
-Request connection to a registered service machine
-+ <S>:  1 byte with character 'S'
-+ <ID>: 2 bytes interger represent service machine's ID
-+ <IP:PORT>: 4 bytes private IP;2 bytes private port of request machine
-REPLY:
-To requester: <I><ID><IP1:PORT1><IP2:PORT2>
-+ <I>:  1 byte with character 'I'
-+ <ID>: 2 bytes interger represent service machine's ID
-+ <IP1:PORT1>: 4 bytes private IP;2 bytes private port of service machine
-+ <IP2:PORT2>: 4 bytes public IP;2 bytes public port of service machine
-
-To service: <I><ID><IP1:PORT1><IP2:PORT2>
-+ <I>:  1 byte with character 'I'
-+ <ID>: 2 bytes interger represent requester (managed by Rendevous Server)
-+ <IP1:PORT1>: 4 bytes private IP;2 bytes private port of requester
-+ <IP2:PORT2>: 4 bytes public IP;2 bytes public port of requester
-
-*/
-
 public class RendezvousServer implements Runnable {
-
     
     int m_listeningPort;
     DatagramSocket m_serverSocket = null;
@@ -52,7 +19,7 @@ public class RendezvousServer implements Runnable {
     }
     
     /*
-    Static finction to start server
+    Static function to start server
     */
     public static void serverOn(int listeningPort) {
 
@@ -68,11 +35,9 @@ public class RendezvousServer implements Runnable {
     */
     public void run() {
         try {
+   
+            m_serverSocket = new DatagramSocket(m_listeningPort);                       
             
-            m_serverSocket = new DatagramSocket(m_listeningPort);
-                                 
-            
-
             while (m_isServing) {
                 byte[] buf = new byte[256];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -81,13 +46,15 @@ public class RendezvousServer implements Runnable {
                 System.out.println("Wait client!");
                 m_serverSocket.receive(packet);
                 System.out.println("Command came!");
+                String cmd = new String (packet.getData());
                 
-                buf = packet.getData();
-                switch(buf[0]){
+                switch(cmd.charAt(0)){
                     case 'R':
+                        registerServiceMachine(packet);
                         break;
                         
                     case 'S':
+                        serviceRequest(cmd);
                         break;
                         
                     case '0': // STOP SERVER
@@ -104,6 +71,67 @@ public class RendezvousServer implements Runnable {
         } catch (IOException e) {
             System.out.println("serverOn: "+e);
         }
+    }
+    
+   /*
+    * --------------------------------------------------------------------------
+    * void registerServiceMachine(String cmd)
+    * --------------------------------------------------------------------------
+    * COMMAND 1: "R:" + "<ID>:" + "<IP>:" + "<PORT>"
+    * Register service machine.
+    * Where,
+    * + "R:": String of characters 'R' and separator ':'
+    * + <ID>: An Interger.toSting represents service machine's ID
+    * + <IP>: A String formated xxx.xxx.xxx.xxx represents PRIVATE IP of service
+        machine.
+    * + <PORT>: An Interger.toString represents PRIVATE PORT of service machine
+
+    * REPLY: NO REPLY
+
+    * Example: "R:1234:192.168.0.1:555"
+    * --------------------------------------------------------------------------
+    */
+    void registerServiceMachine(DatagramPacket packet) {
+        
+    }
+    
+    /*
+    * --------------------------------------------------------------------------
+    * void serviceRequest(String cmd)
+    * --------------------------------------------------------------------------
+    * COMMAND 2: "S:" + "<ID>:" + "<IP>:" + "<PORT>"
+    * Request connection to a registered service machine
+    * Where,
+    * + "S:": String of characters 'S' and separator ':'
+    * + <IP>: A String formated xxx.xxx.xxx.xxx represents PRIVATE IP of 
+    *   service machine.
+    * + <PORT>: An Interger.toString represents PRIVATE PORT of service machine
+    *
+    * REPLY:
+    * To REQUESTER: "I:" + "<ID>:" + "<IP1>:" + "<PORT1>:" + "<IP2>:" + "<PORT2>"
+    * Where,
+    * + "I:": String of characters 'I' and separator ':'
+    * + <ID>: 2 bytes interger represent service machine's ID
+    * + <IP1>: A String formated xxx.xxx.xxx.xxx represents PRIVATE IP of 
+    *   service machine.
+    * + <PORT1>: An Interger.toString represents PRIVATE PORT of service machine.
+    * + <IP2>: A String formated xxx.xxx.xxx.xxx represents PUBLIC IP of 
+    *   service machine.
+    * + <PORT2>: An Interger.toString represents PUBLIC PORT of service machine.
+    *
+    * To SERVICE: "I:" + "<ID>:" + "<IP1>:" + "<PORT1>:" + "<IP2>:" + "<PORT2>"
+    * + "I:": String of characters 'I' and separator ':'
+    * + <ID>: 2 bytes interger represent service machine's ID
+    * + <IP1>: A String formated xxx.xxx.xxx.xxx represents PRIVATE IP of 
+    *   requester.
+    * + <PORT1>: An Interger.toString represents PRIVATE PORT of requester.
+    * + <IP2>: A String formated xxx.xxx.xxx.xxx represents PUBLIC IP of 
+    *   requester.
+    * + <PORT2>: An Interger.toString represents PUBLIC PORT of requester.
+    * --------------------------------------------------------------------------
+    */
+    void serviceRequest(String cmd) {
+        
     }
     
     /*
