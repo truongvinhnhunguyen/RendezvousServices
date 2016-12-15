@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RendezvousServer implements Runnable {
     
@@ -93,6 +95,47 @@ public class RendezvousServer implements Runnable {
     */
     void registerServiceMachine(DatagramPacket packet) {
         
+        System.out.println("Service Machine registration");
+       
+        SessionEndPoints endPoints = new SessionEndPoints();
+        String cmd = new String (packet.getData());
+        
+        String sTemp;
+        int start;
+        int end;
+        
+        // Get service machine's ID
+        start = 2;
+        end = cmd.indexOf(":", start);
+        Integer serviceId = new Integer(cmd.substring(start, end-1));
+        System.out.println("SERVICE ID: " + serviceId);
+        
+        // Get PRIVATE IP
+        start = end + 1;
+        end = cmd.indexOf(":", start);
+        sTemp = cmd.substring(start, end-1);
+        endPoints.setPrivateIP(sTemp);
+        System.out.println("PRIVATE IP: " + sTemp);
+        
+        // Get PRIVATE PORT
+        start = end + 1;
+        end = cmd.length() - 1;
+        sTemp = cmd.substring(start, end-1);
+        endPoints.setPrivatePort(Integer.parseInt(sTemp));
+        System.out.println("PRIVATE PORT: " + sTemp);
+        
+        // Get PUBLIC IP
+        sTemp = packet.getAddress().toString();
+        endPoints.setPublicIP(sTemp);
+        System.out.println("PUBLIC IP: " + sTemp);
+        
+        // Get PUBLIC PORT
+        int pPort = packet.getPort();
+        endPoints.setPublicPort(pPort);
+        System.out.println("PUBLIC PORT: " + pPort);
+        
+        // Put to session table. If key is existing, do replacing value
+        m_sessionTable.put(serviceId, endPoints);
     }
     
     /*
